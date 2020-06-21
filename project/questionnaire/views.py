@@ -7,14 +7,9 @@ from .serializers import QuestionnaireSerializer, QuestionSerializer, AnswerSeri
 from datetime import datetime
 
 
-# from django.shortcuts import get_object_or_404
-# from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
-
 class QuestionnaireViewSet(ModelViewSet):
     queryset = Questionnaire.objects.filter(end_date__gt=datetime.now())
     serializer_class = QuestionnaireSerializer
-
-    # permission_classes = [IsAuthenticatedOrReadOnly]
 
     def update(self, request, pk=None):
 
@@ -40,8 +35,6 @@ class QuestionViewSet(ModelViewSet):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
 
-    # permission_classes = [IsAdminUser]
-
     @action(detail=True)
     def answers(self, request, pk=None):
         question = Question.objects.get(pk=pk)
@@ -53,7 +46,6 @@ class QuestionViewSet(ModelViewSet):
 class AnswerViewSet(ModelViewSet):
     queryset = Answer.objects.all()
     serializer_class = AnswerSerializer
-    # permission_classes = [IsAdminUser]
 
 
 class PollViewSet(ModelViewSet):
