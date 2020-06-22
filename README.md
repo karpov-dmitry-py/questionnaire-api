@@ -30,8 +30,8 @@ questionnaire - внешний ключ к опросам (целое число
 
 
 3. Управление доступными ответами к вопросам: (CRUD-операции):
-http://127.0.0.1:8000/answers/ - GET, PUT<br> 
-http://127.0.0.1:8000/answers/<int:pk>/ - GET<br> 
+http://127.0.0.1:8000/answers/ - POST, GET
+http://127.0.0.1:8000/answers/<int:pk>/ - GET, PUT 
 http://127.0.0.1:8000/questions/<int:pk>/answers/ - GET, список всех доступных ответов по конкретному вопросу<br> 
 
 Поля ответа:
