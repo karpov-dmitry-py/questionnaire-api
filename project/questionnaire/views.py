@@ -54,7 +54,7 @@ class PollViewSet(ModelViewSet):
 
     @action(detail=False)
     def answers(self, request):
-        user_id = request.data.get('user_id', 0)
+        user_id = request.query_params.get('user_id', 0)
         user_answers = Poll.objects.filter(user_id=user_id)
         serializer = PollSerializer(user_answers, many=True)
         return Response(serializer.data)
