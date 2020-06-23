@@ -1,8 +1,10 @@
 from rest_framework import status
+from rest_framework import permissions
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import Questionnaire, Question, Answer, Poll
+from .permissions import IsAdminOrReadOnly
 from .serializers import QuestionnaireSerializer, QuestionSerializer, AnswerSerializer, PollSerializer
 from datetime import datetime
 
@@ -10,6 +12,7 @@ from datetime import datetime
 class QuestionnaireViewSet(ModelViewSet):
     queryset = Questionnaire.objects.filter(end_date__gt=datetime.now())
     serializer_class = QuestionnaireSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsAdminOrReadOnly]
 
     def update(self, request, pk=None):
 
@@ -34,6 +37,7 @@ class QuestionnaireViewSet(ModelViewSet):
 class QuestionViewSet(ModelViewSet):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsAdminOrReadOnly]
 
     @action(detail=True)
     def answers(self, request, pk=None):
@@ -46,7 +50,7 @@ class QuestionViewSet(ModelViewSet):
 class AnswerViewSet(ModelViewSet):
     queryset = Answer.objects.all()
     serializer_class = AnswerSerializer
-
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsAdminOrReadOnly]
 
 class PollViewSet(ModelViewSet):
     queryset = Poll.objects.all()
