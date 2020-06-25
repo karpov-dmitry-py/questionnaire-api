@@ -34,6 +34,13 @@ class QuestionnaireViewSet(ModelViewSet):
         serializer = QuestionSerializer(questions, many=True)
         return Response(serializer.data)
 
+    @action(detail=True)
+    def completed_polls(self, request, pk=None):
+        questionnaire = Questionnaire.objects.get(pk=pk)
+        completed_polls = questionnaire.completed_polls.all()
+        serializer = CompletedPollSerializer(completed_polls, many=True)
+        return Response(serializer.data)
+
 
 class QuestionViewSet(ModelViewSet):
     queryset = Question.objects.all()
@@ -82,7 +89,7 @@ class PollViewSet(ModelViewSet):
         question = Question.objects.get(pk=question_id)
         questionnaire = question.questionnaire
         questions = questionnaire.questions.all()
-        polls = Poll.objects.filter(question__questionnaire=questionnaire)
+        polls = Poll.objects.filter(question__questionnaire=questionnaire).filter(user_id=user_id)
 
         # есть как минимум один ответ для каждого вопроса
         for question in questions:
