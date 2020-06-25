@@ -23,6 +23,7 @@ router.register(r'questionnaires', app_views.QuestionnaireViewSet)
 router.register(r'questions', app_views.QuestionViewSet)
 router.register(r'answers', app_views.AnswerViewSet)
 router.register(r'polls', app_views.PollViewSet)
+router.register(r'completed_polls', app_views.CompletedPollViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

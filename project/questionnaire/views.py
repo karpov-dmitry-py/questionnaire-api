@@ -3,9 +3,10 @@ from rest_framework import permissions
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Questionnaire, Question, Answer, Poll
+from .models import Questionnaire, Question, Answer, Poll, CompletedPoll
 from .permissions import IsAdminOrReadOnly
-from .serializers import QuestionnaireSerializer, QuestionSerializer, AnswerSerializer, PollSerializer
+from .serializers import QuestionnaireSerializer, QuestionSerializer, AnswerSerializer, \
+    PollSerializer, CompletedPollSerializer
 from datetime import datetime
 
 
@@ -40,9 +41,17 @@ class QuestionViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsAdminOrReadOnly]
 
     @action(detail=True)
+    def polls(self, request, pk=None):
+        user_id = request.query_params.get('user_id', 0)
+        question = Question.objects.get(pk=pk)
+        polls = question.polls.filter(user_id=user_id) if user_id else question.polls.all()
+        serializer = PollSerializer(polls, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True)
     def answers(self, request, pk=None):
         question = Question.objects.get(pk=pk)
-        answers = Answer.objects.filter(question=question)
+        answers = question.answers.all()
         serializer = AnswerSerializer(answers, many=True)
         return Response(serializer.data)
 
@@ -51,6 +60,7 @@ class AnswerViewSet(ModelViewSet):
     queryset = Answer.objects.all()
     serializer_class = AnswerSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsAdminOrReadOnly]
+
 
 class PollViewSet(ModelViewSet):
     queryset = Poll.objects.all()
@@ -61,4 +71,39 @@ class PollViewSet(ModelViewSet):
         user_id = request.query_params.get('user_id', 0)
         user_answers = Poll.objects.filter(user_id=user_id)
         serializer = PollSerializer(user_answers, many=True)
+        return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+        save_result = super().create(request, *args, **kwargs)
+
+        # проверим, можно ли считать опрос пройденным
+        question_id = request.data['question']
+        user_id = request.data['user_id']
+        question = Question.objects.get(pk=question_id)
+        questionnaire = question.questionnaire
+        questions = questionnaire.questions.all()
+        polls = Poll.objects.filter(question__questionnaire=questionnaire)
+
+        # есть как минимум один ответ для каждого вопроса
+        for question in questions:
+            result = any(question.id == poll.question.id for poll in polls)
+            if not result:
+                break
+        else:
+            completed_poll = CompletedPoll(user_id=user_id, questionnaire=questionnaire)
+            completed_poll.save()
+
+        return save_result
+
+
+class CompletedPollViewSet(ModelViewSet):
+    queryset = CompletedPoll.objects.all()
+    serializer_class = CompletedPollSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsAdminOrReadOnly]
+
+    @action(detail=False)
+    def by_user(self, request):
+        user_id = request.query_params.get('user_id', 0)
+        user_completed_polls = CompletedPoll.objects.filter(user_id=user_id)
+        serializer = CompletedPollSerializer(user_completed_polls, many=True)
         return Response(serializer.data)

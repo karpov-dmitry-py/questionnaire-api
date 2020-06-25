@@ -44,3 +44,12 @@ class Poll(models.Model):
 
     def __str__(self):
         return f'[ user id: {self.user_id}, question id: {self.question.id}] id: {self.id}. ответ: {self.user_answer}'
+
+
+class CompletedPoll(models.Model):
+    user_id = models.IntegerField()
+    questionnaire = models.ForeignKey(Questionnaire, on_delete=models.CASCADE, related_name='completed_polls')
+    completion_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'user id: {self.user_id}, questionnaire id: {self.questionnaire.id}, опрос пройден: {self.completion_date}'
